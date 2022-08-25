@@ -333,8 +333,8 @@ class Mastermind
             The code BREAKER will have 12 turns to decipher the code that the MAKER has created.\n
             The code consists of 4 colors, ranging from: #{red('RED')}, #{blue('BLUE')}, #{green('GREEN')}, WHITE, #{yellow('YELLOW')} and #{purple('PURPLE')}.\n
             Feedback will be given with each entry to show how close the guess was to the hidden code.\n
-            When guessing a correct color that is in the correct position, your feedback will be a green dot.\n
-            When guessing a correct color in the incorrect position, your feedwill will be a red dot.\n
+            When guessing a correct color that is in the correct position, your feedback will be a red dot.\n
+            When guessing a correct color in the incorrect position, your feedwill will be a white dot.\n
             The feedback position does not correlate with the guess position.\n\n"
   end
 end
