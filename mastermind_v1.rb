@@ -1,164 +1,9 @@
+require './game.rb'
+require './computer.rb'
+require './player.rb'
 require 'colorize'
 require 'colorized_string'
 
-module Game
-  def find_remaining_combinations(computer_guess, clues)
-    red_pegs, white_pegs = nr_of_pegs(clues)
-    if  red_pegs + white_pegs == 4
-      @all_combinations = computer_guess.permutation(4).to_a
-    end
-    if red_pegs > 0
-      possible_matching_positions = [0, 1, 2, 3].combination(red_pegs).to_a
-      remaining_combinations = check_red_pegs(possible_matching_positions, computer_guess)
-    elsif white_pegs > 0
-      possible_matching_colors =
-        computer_guess.combination(white_pegs).to_a.uniq
-      remaining_combinations =
-        check_white_pegs(possible_matching_colors, computer_guess)
-    else
-      counts = Hash.new(0)
-      computer_guess.each { |color| counts[color] += 1 }
-      colors_not_in_secret_code = counts.keys
-      remaining_combinations = delete_combinations(colors_not_in_secret_code)
-    end
-    remaining_combinations.delete(computer_guess)
-    @all_combinations = remaining_combinations
-  end
-
-  def nr_of_pegs(clues)
-    counts = Hash.new(0)
-    clues.each { |clue| counts[clue] += 1 }
-    red_pegs = counts["\e[31m\u25CF\e[0m"] 
-    white_pegs = counts["\u25CF"]
-    return red_pegs, white_pegs
-  end
-
-  def check_red_pegs(possible_matching_positions, computer_guess)
-    remaining_combinations = []
-    @all_combinations.each do |combination|
-      possible_matching_positions.each do |positions|
-        match = []
-        positions.each do |position|
-          if combination[position] == computer_guess[position]
-            match << '+'
-          else
-            match << '-'
-          end
-        end
-
-        if match?(match)
-          remaining_combinations << combination
-          break
-        end
-      end
-    end
-    remaining_combinations
-  end
-
-  def check_white_pegs(possible_matching_colors, computer_guess)
-    remaining_combinations = []
-    @all_combinations.each do |combination|
-      possible_matching_colors.each do |colors|
-        match = []
-        colors.each do |color|
-          combination.include?(color) ? match << '+' : match << '-'
-        end
-        if match?(match)
-          remaining_combinations << combination
-          break
-        end
-      end
-    end
-    remaining_combinations
-  end
-
-  def match?(match)
-    match.all? { |el| el == '+' }
-  end
-
-  def delete_combinations(colors_not_in_secret_code)
-    remaining_combinations = []
-    @all_combinations.each_with_index do |combination, i|
-      colors_not_in_secret_code.each do |color|
-        if combination.include?(color)
-          @all_combinations[i] = nil
-          break
-        end
-      end
-    end
-    remaining_combinations = @all_combinations.compact
-    remaining_combinations
-  end
-end
-
-module Computer
-  include Game
-  class Computer
-    def make_guess(turns, all_combinations)
-      turns == 11 ? %w[yellow yellow blue blue] : all_combinations.sample
-    end
-  end
-end
-
-module Human
-  class Player
-    def initialize
-    @all_colors = Mastermind::COLORS
-  end
-
-  def make_guess
-    loop do
-      puts 'Type your 4 color combination (seperate colors with a space):'
-      guess = gets.chomp.downcase.split(' ')
-      return guess if valid_input?(guess)
-      puts "\nInvalid input"
-    end
-  end
-
-  def create_secret_combination
-    loop do
-      puts "\nCreate a 4 color secret combination (seperate colors with a space):"
-      secret_combination = gets.chomp.downcase.split(' ')
-      return secret_combination if valid_input?(secret_combination)
-      puts "\nInvalid input"
-    end
-  end
-
-
-    private
-
-    def valid_input?(color_array)
-      color_array.size == 4 &&
-        color_array.all? { |color| @all_colors.include?(color) }
-    end
-  end
-end
-
-module Colorize
-  def colorize(text, color_code)
-    "#{color_code}#{text}\e[0m"
-  end
-
-  def red(text)
-    colorize(text, "\e[31m")
-  end
-
-  def yellow(text)
-    colorize(text, "\e[33m")
-  end
-
-  def blue(text)
-    colorize(text, "\e[34m")
-  end
-
-  def green(text)
-    colorize(text, "\e[32m")
-  end
-
-  def purple(text)
-    colorize(text, "\e[35m")
-  end  
-end
 
 class Mastermind
   include Colorize
@@ -324,6 +169,7 @@ class Mastermind
     |  | |_ | |  |__|  | |  |\  /|  | |  |        |  |  |  | |  |\     | |__|
     |  |__| | |   __   | |  | \/ |  | |  |___     |  \__/  | |  | \    |  __
      \______/ |__/  \__| |__|    |__| |______|     \______/  |__|  \___| |__| 
+
      "
      puts "
      ----------------------------------------------------------------------------
@@ -337,6 +183,32 @@ class Mastermind
             When guessing a correct color in the incorrect position, your feedwill will be a white dot.\n
             The feedback position does not correlate with the guess position.\n\n"
   end
+end
+
+module Colorize
+  def colorize(text, color_code)
+    "#{color_code}#{text}\e[0m"
+  end
+
+  def red(text)
+    colorize(text, "\e[31m")
+  end
+
+  def yellow(text)
+    colorize(text, "\e[33m")
+  end
+
+  def blue(text)
+    colorize(text, "\e[34m")
+  end
+
+  def green(text)
+    colorize(text, "\e[32m")
+  end
+
+  def purple(text)
+    colorize(text, "\e[35m")
+  end  
 end
 
 new_game = Mastermind.new
